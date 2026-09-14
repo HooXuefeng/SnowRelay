@@ -1,0 +1,39 @@
+.venv/
+.build-env/
+.build-python/
+.build-python312/
+.build-python312-installer.exe
+.build-tcl/
+.runtime/
+build/
+dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configuration, credentials and runtime data
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.sqlite*
+*.log
+*.bak
+
+# Generated customer data and release files
+*.xlsx
+*.snowedge.json
+*.exe
+*.dll
+*.pdb
+*.zip
+*.lnk
+
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

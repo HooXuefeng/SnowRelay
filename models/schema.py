@@ -1,0 +1,41 @@
+from __future__ import annotations
+
+STANDARD_COLUMNS = [
+    "asset_ip", "hostname", "target_url", "port", "protocol", "service",
+    "severity", "cvss", "vuln_name", "cve", "cnvd", "cnnvd",
+    "username", "password", "description", "evidence", "solution",
+    "source_category", "source_platform", "source_file", "source_sheet", "original_row",
+    "is_high_vulnerability", "is_high_risk_port", "is_weak_password",
+    "credential_status", "risk_type", "match_reason",
+]
+
+EXPORT_LABELS = {
+    "asset_ip": "资产IP",
+    "hostname": "主机名",
+    "target_url": "目标URL",
+    "port": "端口",
+    "protocol": "协议",
+    "service": "服务",
+    "severity": "风险等级",
+    "cvss": "CVSS",
+    "vuln_name": "漏洞名称",
+    "cve": "CVE",
+    "cnvd": "CNVD",
+    "cnnvd": "CNNVD",
+    "username": "用户名",
+    "password": "密码/口令",
+    "description": "漏洞描述",
+    "evidence": "证据/结果",
+    "solution": "修复建议",
+    "source_category": "客户原始分类",
+    "source_platform": "来源平台",
+    "source_file": "来源文件",
+    "source_sheet": "来源Sheet",
+    "original_row": "原始行号",
+    "is_high_vulnerability": "高危漏洞",
+    "is_high_risk_port": "高危端口",
+    "is_weak_password": "弱口令",
+    "credential_status": "凭据状态",
+    "risk_type": "两高一弱分类",
+    "match_reason": "命中原因",
+}
