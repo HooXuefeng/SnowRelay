@@ -9,7 +9,9 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 import pandas as pd
+from tkinterdnd2 import DND_FILES, TkinterDnD
 
+from app.import_paths import classify_input_paths
 from app.pipeline import export_result, export_to_snowedge, inspect_inputs, mapping_key, process_files
 from models.schema import EXPORT_LABELS, STANDARD_COLUMNS
 
@@ -132,7 +134,7 @@ class SnowButton(tk.Button):
         )
 
 
-class MainWindow(tk.Tk):
+class MainWindow(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
         self.title(f"{APP_NAME} {APP_VERSION}")
@@ -384,17 +386,29 @@ class MainWindow(tk.Tk):
         page = self._new_page("import")
         drop = self._panel(page)
         drop.pack(fill="x", pady=(0, 14))
-        box = tk.Frame(drop, bg=PANEL, padx=20, pady=26)
-        box.pack(fill="x")
-        tk.Label(box, text="＋", bg=PANEL, fg=ACCENT, font=("Segoe UI", 31, "bold")).pack()
-        tk.Label(box, text="导入客户两高一弱表格", bg=PANEL, fg=TEXT, font=("Microsoft YaHei UI", 14, "bold")).pack(pady=(5, 2))
-        tk.Label(box, text="自动识别标题行、多 Sheet、字段与分类 · 支持 CSV / XLS / XLSX / XLSM", bg=PANEL, fg=MUTED, font=("Microsoft YaHei UI", 10)).pack()
-        SnowButton(box, "选择客户表格", self.add_files, "primary").pack(pady=(14, 6))
+        self.drop_box = tk.Frame(
+            drop, bg="#F7F7FF", padx=20, pady=24,
+            highlightbackground="#A5B4FC", highlightcolor=ACCENT,
+            highlightthickness=2, cursor="hand2",
+        )
+        self.drop_box.pack(fill="x", padx=12, pady=12)
+        self.drop_icon = tk.Label(self.drop_box, text="⇩", bg="#F7F7FF", fg=ACCENT, font=("Segoe UI", 30, "bold"), cursor="hand2")
+        self.drop_icon.pack()
+        self.drop_title = tk.Label(self.drop_box, text="拖动客户表格到这里", bg="#F7F7FF", fg=TEXT, font=("Microsoft YaHei UI", 14, "bold"), cursor="hand2")
+        self.drop_title.pack(pady=(4, 2))
+        self.drop_hint = tk.Label(
+            self.drop_box,
+            text="可一次拖入多个 CSV / XLS / XLSX / XLSM 文件，也可以点击下方按钮选择",
+            bg="#F7F7FF", fg=MUTED, font=("Microsoft YaHei UI", 10), cursor="hand2",
+        )
+        self.drop_hint.pack()
+        SnowButton(self.drop_box, "选择客户表格", self.add_files, "primary").pack(pady=(14, 6))
         tk.Checkbutton(
-            box, text="导入后自动转换（推荐）", variable=self.auto_convert_var,
-            bg=PANEL, fg=TEXT, activebackground=PANEL, activeforeground=TEXT,
-            selectcolor=PANEL, font=("Microsoft YaHei UI", 10), cursor="hand2",
+            self.drop_box, text="导入后自动转换（推荐）", variable=self.auto_convert_var,
+            bg="#F7F7FF", fg=TEXT, activebackground="#F7F7FF", activeforeground=TEXT,
+            selectcolor="#F7F7FF", font=("Microsoft YaHei UI", 10), cursor="hand2",
         ).pack()
+        self._register_drop_target_tree(self.drop_box)
 
         bar = tk.Frame(page, bg=BG)
         bar.pack(fill="x", pady=(0, 8))
@@ -590,18 +604,64 @@ class MainWindow(tk.Tk):
             ("安全结果文件", "*.csv *.xls *.xlsx *.xlsm"),
             ("CSV", "*.csv"), ("Excel", "*.xls *.xlsx *.xlsm"), ("所有文件", "*.*")
         ])
-        changed = False
-        for p in paths:
-            if p not in self.files:
-                self.files.append(p)
-                changed = True
+        self._add_input_paths(paths)
+
+    def _set_drop_style(self, active: bool):
+        bg = "#EEF0FF" if active else "#F7F7FF"
+        border = ACCENT if active else "#A5B4FC"
+        self.drop_box.configure(bg=bg, highlightbackground=border)
+        for widget in (self.drop_icon, self.drop_title, self.drop_hint):
+            widget.configure(bg=bg)
+
+    def _register_drop_target_tree(self, widget):
+        """Make every visible part of the import area accept file drops."""
+        widget.drop_target_register(DND_FILES)
+        widget.dnd_bind("<<DropEnter>>", self._on_drop_enter)
+        widget.dnd_bind("<<DropLeave>>", self._on_drop_leave)
+        widget.dnd_bind("<<Drop>>", self._on_files_dropped)
+        for child in widget.winfo_children():
+            self._register_drop_target_tree(child)
+
+    def _on_drop_enter(self, event):
+        self._set_drop_style(True)
+        return event.action
+
+    def _on_drop_leave(self, event):
+        self._set_drop_style(False)
+        return event.action
+
+    def _on_files_dropped(self, event):
+        self._set_drop_style(False)
+        # TkDND passes a Tcl list. splitlist preserves paths containing spaces.
+        paths = self.tk.splitlist(event.data)
+        self._add_input_paths(paths, dropped=True)
+        return event.action
+
+    def _add_input_paths(self, paths, dropped: bool = False):
+        accepted, rejected = classify_input_paths(paths)
+        existing = {os.path.normcase(str(Path(p).resolve())) for p in self.files}
+        additions = [p for p in accepted if os.path.normcase(p) not in existing]
+        changed = bool(additions)
+        self.files.extend(additions)
+
         if changed:
             self.inspect_meta = []
             self.result_df = None
             self.result_meta = []
-            self.status_var.set(f"IMPORTED · {len(self.files)} file(s) · 等待字段检测")
+            verb = "已拖入" if dropped else "已选择"
+            self.status_var.set(f"IMPORTED · {verb} {len(additions)} 个文件 · 共 {len(self.files)} 个")
             self._refresh_all()
             self.inspect_files()
+        elif accepted and not rejected:
+            self.status_var.set("READY · 所选文件已在导入列表中")
+
+        if rejected:
+            preview = "\n".join(f"• {item}" for item in rejected[:8])
+            extra = f"\n…另有 {len(rejected) - 8} 项" if len(rejected) > 8 else ""
+            messagebox.showwarning(
+                "部分文件未导入",
+                f"SnowRelay 仅接收 CSV / XLS / XLSX / XLSM 文件。\n\n{preview}{extra}",
+            )
 
     def remove_selected_file(self):
         selected = self.import_tree.selection()

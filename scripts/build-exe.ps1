@@ -73,8 +73,14 @@ if (Has-TkFiles $bundledPython) {
     $python = $existingBuildPython
 }
 
-& $python -c "import pandas, openpyxl, xlrd, PyInstaller" 2>$null
-if ($LASTEXITCODE -ne 0) {
+$dependenciesReady = $false
+try {
+    & $python -c "import pandas, openpyxl, xlrd, tkinterdnd2, PyInstaller" 2>$null
+    $dependenciesReady = ($LASTEXITCODE -eq 0)
+} catch {
+    $dependenciesReady = $false
+}
+if (-not $dependenciesReady) {
     Write-Host 'Installing missing build dependencies...'
     & $python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-build.txt
     if ($LASTEXITCODE -ne 0) { throw 'Build dependency installation failed. Check the network and Python configuration.' }

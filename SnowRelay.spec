@@ -16,7 +16,7 @@ binaries = [
     (os.path.join(python_dlls, 'tcl86t.dll'), '.'),
     (os.path.join(python_dlls, 'tk86t.dll'), '.'),
 ]
-hiddenimports = ['openpyxl', 'xlrd']
+hiddenimports = ['openpyxl', 'xlrd', 'tkinterdnd2']
 
 
 a = Analysis(
