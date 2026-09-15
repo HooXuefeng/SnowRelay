@@ -4,6 +4,8 @@
 
 <p align="center"><strong>安全结果标准化 · 两高一弱转换 · SnowEdge 联动</strong></p>
 
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0--or--later-4f46e5.svg" alt="GPL-3.0-or-later"></a></p>
+
 **Security Finding Normalization**  
 **Version: v0.5.0**
 
@@ -167,9 +169,13 @@ build_exe.bat
 
 SnowRelay 不主动扫描目标，不实施漏洞利用。它用于处理已有的、经授权获取的扫描结果与治理数据。单个输入文件限制为 50 MB、总记录限制为 200,000 条，并检查异常工作簿压缩比。弱口令字段在 Excel 中默认完整遮盖，在 SnowEdge 联动包中始终排除。
 
-## 12. 授权说明
+## 12. 开源许可证
 
-Copyright © 2026 SnowPeak。当前尚未指定开源许可证；公开源码不等于授予复制、修改、分发或商业使用许可。第三方依赖遵循各自许可证。
+Copyright © 2026 SnowPeak。
+
+SnowRelay 以 **GNU General Public License v3.0 or later（GPL-3.0-or-later）** 开源。你可以使用、研究、修改和分发本项目；分发本项目或其修改版本时，需要提供对应源码、保留版权与许可证声明，并继续采用 GPLv3 或更高版本。完整法律文本见 [LICENSE](LICENSE)。
+
+Python、pandas、openpyxl、xlrd、tkinterdnd2、Pillow 和 PyInstaller 等第三方组件保持各自许可证，详见 [第三方声明](THIRD_PARTY_NOTICES.md)。许可证不代表对输入数据或目标系统的测试授权；使用者仍需获得合法的数据处理与安全测试授权。
 
 ---
 

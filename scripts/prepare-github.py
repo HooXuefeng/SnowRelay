@@ -21,7 +21,7 @@ SOURCE_SUFFIXES = {".py", ".md", ".txt", ".json", ".yaml", ".yml", ".png", ".ico
 ROOT_FILES = {
     ".gitignore", "README.md", "CHANGELOG.md", "VERSION", "main.py",
     "requirements.txt", "requirements-build.txt", "SnowRelay.spec",
-    "start.bat", "install.bat", "build_exe.bat",
+    "start.bat", "install.bat", "build_exe.bat", "LICENSE", "THIRD_PARTY_NOTICES.md",
 }
 EXCLUDED_PARTS = {"__pycache__", ".pytest_cache", ".runtime", ".venv", ".build-env", ".build-python", "build", "dist"}
 

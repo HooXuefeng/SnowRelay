@@ -7,6 +7,8 @@ python_dlls = os.path.join(sys.base_prefix, 'DLLs')
 datas = [
     ('rules', 'rules'),
     ('assets', 'assets'),
+    ('LICENSE', '.'),
+    ('THIRD_PARTY_NOTICES.md', '.'),
     (os.path.join(tcl_root, 'tcl8.6'), '_tcl_data'),
     (os.path.join(tcl_root, 'tk8.6'), '_tk_data'),
     (os.path.join(tcl_root, 'tcl8'), 'tcl8'),

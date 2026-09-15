@@ -97,6 +97,12 @@ if (-not (Test-Path -LiteralPath $output -PathType Leaf)) {
     throw 'The build command completed without creating SnowRelay.exe.'
 }
 $item = Get-Item -LiteralPath $output
+$releaseRoot = Split-Path $output -Parent
+Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE') -Destination $releaseRoot -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination $releaseRoot -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination $releaseRoot -Force
+& $python (Join-Path $projectRoot 'scripts\collect-third-party-licenses.py') (Join-Path $releaseRoot 'THIRD_PARTY_LICENSES')
+if ($LASTEXITCODE -ne 0) { throw 'Unable to collect third-party license files.' }
 Write-Host 'Verifying packaged application startup...'
 $smoke = Start-Process -FilePath $output -ArgumentList '--smoke' -WindowStyle Hidden -PassThru
 if (-not $smoke.WaitForExit(15000)) {
