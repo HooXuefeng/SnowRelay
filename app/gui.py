@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 import subprocess
 import sys
 import threading
@@ -20,7 +21,7 @@ APP_SUBTITLE = "Security Finding Normalization"
 APP_VERSION = "v0.5.0"
 
 # SnowEdge light workspace palette
-BG = "#F5F7FB"
+BG = "#F6F8FC"
 SIDEBAR = "#FFFFFF"
 PANEL = "#FFFFFF"
 PANEL_2 = "#F8FAFD"
@@ -29,9 +30,38 @@ TEXT = "#17213A"
 MUTED = "#62708A"
 ACCENT = "#4F46E5"
 ACCENT_DARK = "#EEF0FF"
-SUCCESS = "#0F9F6E"
-WARNING = "#C47A16"
-DANGER = "#D9485F"
+SUCCESS = "#14B88A"
+WARNING = "#B45309"
+DANGER = "#BE123C"
+
+DISPLAY_SCALES = {
+    "90%": 0.9,
+    "100%": 1.0,
+    "110%": 1.1,
+    "120%": 1.2,
+    "130%": 1.3,
+}
+
+
+def preferences_path() -> Path:
+    base = Path(os.environ.get("LOCALAPPDATA") or Path.home())
+    return base / "SnowPeak" / "SnowRelay" / "preferences.json"
+
+
+def load_preferences() -> dict:
+    try:
+        return json.loads(preferences_path().read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def save_preferences(values: dict) -> None:
+    try:
+        path = preferences_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(values, ensure_ascii=False, indent=2), encoding="utf-8")
+    except OSError:
+        pass
 
 
 def configure_windows_app() -> None:
@@ -142,6 +172,16 @@ class MainWindow(TkinterDnD.Tk):
         self.minsize(1024, 680)
         self.configure(bg=BG)
 
+        prefs = load_preferences()
+        try:
+            self.ui_scale = float(prefs.get("ui_scale", 1.0))
+        except (TypeError, ValueError):
+            self.ui_scale = 1.0
+        if self.ui_scale not in DISPLAY_SCALES.values():
+            self.ui_scale = 1.0
+        self.base_tk_scaling = float(self.tk.call("tk", "scaling"))
+        self.tk.call("tk", "scaling", self.base_tk_scaling * self.ui_scale)
+
         self.root_dir = resource_root()
         self.icon_path = self.root_dir / "assets" / "brand" / "snowrelay-app-48.png"
         self.icon_ico_path = self.root_dir / "assets" / "brand" / "snowrelay.ico"
@@ -193,7 +233,7 @@ class MainWindow(TkinterDnD.Tk):
             background=PANEL,
             fieldbackground=PANEL,
             foreground=TEXT,
-            rowheight=40,
+            rowheight=round(40 * self.ui_scale),
             borderwidth=0,
             relief="flat",
             font=("Microsoft YaHei UI", 11),
@@ -225,7 +265,7 @@ class MainWindow(TkinterDnD.Tk):
         self.option_add("*Font", ("Microsoft YaHei UI", 11))
 
     def _build_shell(self):
-        self.sidebar = tk.Frame(self, bg=SIDEBAR, width=270, highlightbackground=BORDER, highlightthickness=1)
+        self.sidebar = tk.Frame(self, bg=SIDEBAR, width=220, highlightbackground=BORDER, highlightthickness=1)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
@@ -268,6 +308,20 @@ class MainWindow(TkinterDnD.Tk):
         footer.pack(side="bottom", fill="x")
         tk.Label(footer, text=f"{APP_VERSION}", bg=SIDEBAR, fg=MUTED, font=("Segoe UI", 9, "bold")).pack(anchor="w")
         tk.Label(footer, text="SnowEdge Toolchain", bg=SIDEBAR, fg=MUTED, font=("Segoe UI", 9)).pack(anchor="w", pady=(3, 0))
+        scale_row = tk.Frame(footer, bg=SIDEBAR)
+        scale_row.pack(fill="x", pady=(12, 0))
+        tk.Label(scale_row, text="显示大小", bg=SIDEBAR, fg=MUTED, font=("Microsoft YaHei UI", 9)).pack(side="left")
+        self.scale_var = tk.StringVar(value=f"{int(self.ui_scale * 100)}%")
+        scale_picker = ttk.Combobox(
+            scale_row,
+            textvariable=self.scale_var,
+            values=list(DISPLAY_SCALES),
+            state="readonly",
+            width=6,
+            style="Snow.TCombobox",
+        )
+        scale_picker.pack(side="right")
+        scale_picker.bind("<<ComboboxSelected>>", self._change_ui_scale)
 
         self.main = tk.Frame(self, bg=BG)
         self.main.pack(side="left", fill="both", expand=True)
@@ -308,6 +362,14 @@ class MainWindow(TkinterDnD.Tk):
         page = tk.Frame(self.page_host, bg=BG)
         self.pages[key] = page
         return page
+
+    def _change_ui_scale(self, _event=None):
+        scale = DISPLAY_SCALES.get(self.scale_var.get(), 1.0)
+        self.ui_scale = scale
+        self.tk.call("tk", "scaling", self.base_tk_scaling * scale)
+        ttk.Style(self).configure("Snow.Treeview", rowheight=round(40 * scale))
+        save_preferences({"ui_scale": scale})
+        self.update_idletasks()
 
     def _panel(self, master, **pack_kwargs):
         f = tk.Frame(master, bg=PANEL, highlightbackground=BORDER, highlightthickness=1)

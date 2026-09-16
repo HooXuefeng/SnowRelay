@@ -9,6 +9,8 @@
 **Security Finding Normalization**  
 **Version: v0.5.0**
 
+界面遵循 [Snow 产品视觉规范](design/SNOW_DESIGN_SYSTEM.md)，与 SnowEdge、SnowLens 共用靛青、薄荷绿和风险色，并提供 90%–130% 五档显示大小。
+
 SnowRelay 是一款用于授权安全检查、漏洞治理与结果交付的数据转换与联动工具。它将不同扫描平台导出的 CSV / XLS / XLSX / XLSM 结果统一映射到 SnowRelay Schema，并自动识别与整理：
 
 - 高危漏洞

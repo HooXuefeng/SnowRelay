@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — 统一视觉规范
+
+- 与 SnowEdge、SnowLens 统一品牌色、正文层级、控件尺寸和 220px 侧栏。
+- 新增 90%、100%、110%、120%、130% 五档显示大小，并在本机保存选择。
+- 成功、警告和错误颜色改为 Snow 工具链统一语义色。
+- 增加共享视觉规范文档。
+
 <p align="center"><img src="assets/brand/snowrelay-app.png" width="96" alt="SnowRelay"></p>
 
 ```mermaid
