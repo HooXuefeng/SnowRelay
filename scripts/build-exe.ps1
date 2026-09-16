@@ -4,6 +4,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 Set-Location $projectRoot
 $buildEnv = Join-Path $projectRoot '.build-env'
+$env:PYINSTALLER_CONFIG_DIR = Join-Path $projectRoot '.build-cache'
 
 function Get-PythonBase([string]$pythonExe) {
     if (-not (Test-Path -LiteralPath $pythonExe -PathType Leaf)) { return $null }

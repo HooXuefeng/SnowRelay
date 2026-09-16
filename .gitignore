@@ -1,5 +1,6 @@
 .venv/
 .build-env/
+.build-cache/
 .build-python/
 .build-python312/
 .build-python312-installer.exe
